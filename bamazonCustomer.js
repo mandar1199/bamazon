@@ -39,6 +39,7 @@ function showTable() {
 //input function to be run directly under the table
 function itemRequest() {
     inquirer.prompt([{
+        //first request for input from user
         name: "requestId",
         type: "input",
         message: "Please enter the ID number of the item you wish to purchase.",
@@ -46,10 +47,12 @@ function itemRequest() {
             if (isNaN(value) == false) {
                 return true;
             }else {
-                return false
+                return false;
+                console.log("\nInsufficient ID number entered. \nPlease enter the ID number of the item you wish to purchase, as it appears on the table.");
             }
         }
     }, {
+        //second request for input from user
         name: "requestQuantity",
         type: "input",
         //how do i do something like ?
@@ -62,9 +65,48 @@ function itemRequest() {
                 return true;
             }else {
                 return false;
+                console.log("\nPlease enter a valid quantity of the item woudld like to purchase.");
             }
         }
+    //accepthing and using inputs from user
+    //function(answer) vs. function(input)?
     }]).then(function (answer) {
-        
+        var inputId = (answer.requestId) - 1;
+        var inputQuantity = parseInt(answer.requestQuantity);
+        var total = parseFloat(((res[inputId].price)*inputQuantity).toFixed(2));
+
+        //if suffcient quantity display  total and thank you 
+        if(res[inputId].stock_quantity >= inputQuantity) {
+            connection.query("UPDATE products SET ? WHERE ?", [
+                {stock_quantity: (res[inputId].stock_quantity - inputQuantity)},
+                {id: answer.requestId}
+            ],function (err, result) {
+                if (err) throw err;
+                console.log("The total for your order is $" + total.toFixed(2) + "Thank you for choosing Bamazon! \n Your order will be shipped to you in 3-5 business days.");
+            });
+        //else display "cannot fill"
+        }else {
+            console.log("Our apologies! Order cannot be filled due to insufficient stock.")
+        }
+        //something else?
+        additionalRequest();
     })
 }
+//whether the order is placed or not "Would you like something else?"
+function additionalRequest() {
+    //confirm input for yes or no for another order
+    inquirer.prompt([{
+        name: "additionalItem",
+        type: "confirm",
+        message: "Would you like to place another order?"
+    }]).then(function (answer) {
+        //if yes take back to the beggining 
+        if(answer.additionalRequest) {
+            showTable();
+        }else {
+            console.log("Thank you! Goodbye!")
+        }
+    })
+}
+//connection.end? but want to show revised table w/o starting questions
+showTable();
