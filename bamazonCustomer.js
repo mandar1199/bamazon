@@ -17,6 +17,7 @@ connection.connect(function(err) {
     if (err) throw err;
     //console.log("connected as id" + connection.threadId + "\n");
     showTable();
+    connection.end;
 });
 
 //when bamazonCustomer.js is requested welcome and show best sellers table
@@ -32,12 +33,12 @@ function showTable() {
         }
         if (err) throw err;
         console.table(res);
+        itemRequest(res);
     });
     //call input function
-    itemRequest();
 }
 //input function to be run directly under the table
-function itemRequest() {
+function itemRequest(res) {
     inquirer.prompt([{
         //first request for input from user
         name: "requestId",
@@ -82,7 +83,7 @@ function itemRequest() {
                 {id: answer.requestId}
             ],function (err, result) {
                 if (err) throw err;
-                console.log("The total for your order is $" + total.toFixed(2) + "Thank you for choosing Bamazon! \n Your order will be shipped to you in 3-5 business days.");
+                console.log("The total for your order is $" + total.toFixed(2) + " Thank you for choosing Bamazon! \n Your order will be shipped to you in 3-5 business days.");
             });
         //else display "cannot fill"
         }else {
@@ -101,12 +102,11 @@ function additionalRequest() {
         message: "Would you like to place another order?"
     }]).then(function (answer) {
         //if yes take back to the beggining 
-        if(answer.additionalRequest) {
+        console.log(answer.additionalItem);
+        if(answer.additionalItem) {
             showTable();
         }else {
             console.log("Thank you! Goodbye!")
         }
     })
 }
-//connection.end? but want to show revised table w/o starting questions
-showTable();
